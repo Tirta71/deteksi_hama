@@ -1,0 +1,35 @@
+/* Offset untuk navbar fixed */
+body {
+  padding-top: 100px;
+}
+@media (max-width: 576px) {
+  body {
+    padding-top: 120px;
+  }
+}
+
+/* Kotak media seragam 640x640 (tetap square) */
+.media-640 {
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 1;
+  background: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.media-640 > img,
+.media-640 > canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+.media-640 > canvas {
+  cursor: crosshair;
+}
