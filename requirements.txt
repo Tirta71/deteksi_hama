@@ -1,5 +1,12 @@
-flask==3.0.3
-opencv-python==4.10.0.84
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+Flask==3.0.3
+gunicorn==21.2.0
+
+torch==2.3.1+cpu
+torchvision==0.18.1+cpu
+
+ultralytics==8.3.10
+opencv-python-headless==4.10.0.84
 numpy==1.26.4
-ultralytics==8.2.86
-werkzeug==3.0.3
+Werkzeug==3.0.3
