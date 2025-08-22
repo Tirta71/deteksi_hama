@@ -1,380 +1,322 @@
-<!DOCTYPE html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Deteksi Hama</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/main.css')
-    }}"
-    />
-  </head>
-  <body class="bg-light d-flex flex-column min-vh-100">
-    <!-- Navbar -->
-    <nav class="navbar navbar-light bg-white shadow-sm fixed-top">
-      <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-          <!-- Logo ikon -->
-          <img
-            src="{{ url_for('static', filename='logo/cover.png') }}"
-            alt="Logo SIMASHA"
-            style="height: 50px; width: auto"
-          />
-          <!-- Logo tulisan/wordmark -->
-          <img
-            src="{{ url_for('static', filename='logo/logo text.png') }}"
-            alt="SIMASHA"
-            style="height: 50px; width: auto"
-          />
-          <span class="visually-hidden">SIMASHA</span>
-        </a>
+{% extends 'base.html' %} {% block title %}SIMASHA - Upload & Deteksi{% endblock
+%} {% block content %}
+<div class="row g-4">
+  <!-- Upload -->
+  <div class="col-md-4">
+    <div class="card shadow-sm h-full">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Upload Gambar</h5>
 
-        <a href="/logout" class="btn btn-outline-dark">
-          <i class="bi bi-box-arrow-right"></i> Log Out
+        <div
+          class="ratio ratio-16x9 rounded overflow-hidden border mb-3 bg-light"
+        >
+          <img
+            id="livePreview"
+            src=""
+            alt="Preview"
+            class="w-100 h-100"
+            style="object-fit: cover; display: none"
+          />
+        </div>
+
+        <form id="uploadForm" class="input-group">
+          <input
+            type="file"
+            id="fileInput"
+            name="file"
+            accept="image/*"
+            class="d-none"
+          />
+          <label for="fileInput" class="btn btn-outline-secondary"
+            >Choose File</label
+          >
+          <input
+            type="text"
+            id="fileName"
+            class="form-control"
+            placeholder="No file chosen"
+            readonly
+          />
+          <button class="btn btn-primary" type="submit">
+            Upload & Deteksi
+          </button>
+        </form>
+
+        <hr />
+        <a
+          href="{{ url_for('hasil_deteksi') }}"
+          class="btn btn-outline-primary w-100"
+        >
+          <i class="bi bi-table"></i> Lihat Hasil Deteksi
         </a>
       </div>
-    </nav>
+    </div>
+  </div>
 
-    <main class="container-fluid my-5 flex-grow-1">
-      <div class="row g-4">
-        <!-- Live Camera + Upload -->
-        <div class="col-md-4">
-          <div class="card h-full shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title mb-3">Live Camera</h5>
-
-              <!-- Preview 16:9 -->
-              <div
-                class="ratio ratio-16x9 rounded overflow-hidden border mb-3 bg-light"
-              >
-                <img
-                  id="livePreview"
-                  src=""
-                  alt="Live Preview"
-                  class="w-100 h-100"
-                  style="object-fit: cover; display: none"
-                />
-              </div>
-
-              <!-- Form upload (POST /) akan auto submit setelah preview muncul) -->
-              <form
-                id="uploadForm"
-                method="POST"
-                enctype="multipart/form-data"
-                class="input-group mb-3"
-              >
-                <button type="button" class="btn btn-primary">
-                  <i class="bi bi-broadcast-pin me-1"></i> Live
-                </button>
-
-                <input
-                  type="file"
-                  id="fileInput"
-                  name="file"
-                  accept="image/*"
-                  class="d-none"
-                />
-                <label for="fileInput" class="btn btn-outline-secondary"
-                  >Choose File</label
-                >
-
-                <input
-                  type="text"
-                  id="fileName"
-                  class="form-control"
-                  placeholder="No file chosen"
-                  readonly
-                />
-              </form>
-
-              <h6 class="text-muted mb-2">Stepper Motor Alignment</h6>
-              <div class="d-grid gap-2">
-                <div class="d-flex justify-content-center">
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill me-2"
-                  >
-                    <i class="bi bi-arrow-up"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill"
-                  >
-                    <i class="bi bi-arrow-down"></i>
-                  </button>
-                </div>
-                <div class="d-flex">
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill me-2"
-                  >
-                    <i class="bi bi-arrow-left"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill"
-                  >
-                    <i class="bi bi-arrow-right"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- Input (canvas) + Crop preview -->
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Input Without Augmentation</h5>
+        <div class="media-640 mb-3">
+          <canvas id="canvas"></canvas>
         </div>
 
-        <!-- Input (canvas) + Crop preview -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Input Without Augmentation</h5>
-              <div class="media-640 mb-3">
-                <canvas id="canvas"></canvas>
-              </div>
-
-              <h5 class="card-title">Input With Augmentation</h5>
-              <div class="media-640 mb-3 position-relative">
-                <img id="cropped" src="" alt="Hasil seleksi" />
-                <div
-                  id="cropLoader"
-                  class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
-                >
-                  Memproses...
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Predictions -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Prediction Without Augmentation</h5>
-              <div class="media-640 mb-2">
-                <img
-                  id="yolo_full"
-                  src="{{ yolo_full_url if yolo_full_url else 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=' }}"
-                  alt="Hasil YOLO Full"
-                  loading="lazy"
-                />
-              </div>
-
-              <h5 class="card-title mt-3">Prediction With Augmentation</h5>
-              <div class="media-640 mb-2 position-relative">
-                <img
-                  id="yolo_crop"
-                  src="{{ yolo_crop_url if yolo_crop_url else 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=' }}"
-                  alt="Hasil YOLO Crop"
-                  loading="lazy"
-                />
-                <div
-                  id="yoloLoader"
-                  class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
-                >
-                  Deteksi...
-                </div>
-              </div>
-              {% if filename %}
-              <div class="d-grid">
-                <button id="resetBtn" class="btn btn-warning">🔄 Reset</button>
-              </div>
-              {% endif %}
-            </div>
+        <h5 class="card-title mt-3">Input With Augmentation</h5>
+        <div class="media-640 position-relative">
+          <img id="cropped" src="" alt="Hasil crop" />
+          <div
+            id="cropLoader"
+            class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
+          >
+            Memproses...
           </div>
         </div>
       </div>
-    </main>
+    </div>
+  </div>
 
-    <footer class="bg-white text-center py-3 shadow-sm mt-auto">
-      <p class="mb-0 text-muted">
-        © Copyright
-        <a href="#" class="fw-bold text-primary text-decoration-none">INAdik</a
-        >. All Rights Reserved
-      </p>
-    </footer>
+  <!-- Predictions -->
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Prediction Without Augmentation</h5>
+        <div class="media-640 mb-2 position-relative">
+          <img
+            id="yolo_full"
+            src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+            alt="Hasil YOLO Full"
+            loading="lazy"
+          />
+        </div>
 
-    <script>
-      // ==== Elemen ====
-      const uploadForm = document.getElementById("uploadForm");
-      const fileInput = document.getElementById("fileInput");
-      const fileNameEl = document.getElementById("fileName");
-      const livePrev = document.getElementById("livePreview");
+        <h5 class="card-title mt-3">Prediction With Augmentation</h5>
+        <div class="media-640 mb-2 position-relative">
+          <img
+            id="yolo_crop"
+            src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+            alt="Hasil YOLO Crop"
+            loading="lazy"
+          />
+          <div
+            id="yoloLoader"
+            class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
+          >
+            Deteksi...
+          </div>
+        </div>
 
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const imgSrc = new Image(); // sumber untuk canvas
-      const cropped = document.getElementById("cropped");
-      const cropLoader = document.getElementById("cropLoader");
-      const yoloCrop = document.getElementById("yolo_crop");
-      const yoloLoader = document.getElementById("yoloLoader");
-      const resetBtn = document.getElementById("resetBtn");
+        <div class="d-grid">
+          <button id="resetBtn" class="btn btn-warning">🔄 Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  const uploadForm = document.getElementById("uploadForm");
+  const fileInput = document.getElementById("fileInput");
+  const fileNameEl = document.getElementById("fileName");
+  const livePrev = document.getElementById("livePreview");
 
-      // Jika server sudah mengirim filename, gunakan itu (opsional)
-      const serverImageUrl =
-        "{{ url_for('uploaded_file', filename=filename) if filename else '' }}";
-      if (serverImageUrl) imgSrc.src = serverImageUrl;
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const imgSrc = new Image();
+  const cropped = document.getElementById("cropped");
 
-      // ==== Preview dari upload + gambarkan ke canvas ====
-      fileInput.addEventListener("change", (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
+  const yoloFull = document.getElementById("yolo_full");
+  const yoloCrop = document.getElementById("yolo_crop");
+  const yoloLoader = document.getElementById("yoloLoader");
+  const resetBtn = document.getElementById("resetBtn");
 
-        fileNameEl.value = file.name;
+  let cropBlob = null; // <--- simpan blob JPEG crop di sini
+  let cropURL = ""; // preview URL untuk blob (revoke jika ada)
+  let lastObjectUrl = "";
 
-        const url = URL.createObjectURL(file);
-        livePrev.src = url;
-        livePrev.style.display = "block";
+  // pilih file → preview & sumber canvas
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-        imgSrc.src = url; // pakai file yang sama untuk canvas
+    // batasi ukuran visual di client? opsional, kita biarkan apa adanya
 
-        // Auto submit untuk menjalankan YOLO full di server (hapus baris di bawah kalau tidak mau reload)
-        uploadForm.submit();
-      });
+    // revoke url lama
+    if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl);
+    lastObjectUrl = URL.createObjectURL(file);
 
-      // ==== Canvas: gambar & seleksi ====
-      let isDown = false,
-        startX = 0,
-        startY = 0,
-        curX = 0,
-        curY = 0,
-        cw = 0,
-        ch = 0;
+    fileNameEl.value = file.name;
+    livePrev.src = lastObjectUrl;
+    livePrev.style.display = "block";
+    imgSrc.src = lastObjectUrl;
 
-      function fitCanvasToBox() {
-        const rect = canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        cw = rect.width;
-        ch = rect.height;
-        canvas.width = Math.round(rect.width * dpr);
-        canvas.height = Math.round(rect.height * dpr);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // reset crop
+    if (cropURL) URL.revokeObjectURL(cropURL);
+    cropURL = "";
+    cropBlob = null;
+    cropped.src = "";
+  });
+
+  // canvas: sizing & drawing
+  let isDown = false,
+    startX = 0,
+    startY = 0,
+    curX = 0,
+    curY = 0,
+    cw = 0,
+    ch = 0;
+
+  function fitCanvasToBox() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    cw = rect.width;
+    ch = rect.height;
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function redraw(showSel) {
+    ctx.clearRect(0, 0, cw, ch);
+    if (imgSrc.src) ctx.drawImage(imgSrc, 0, 0, cw, ch);
+    if (showSel && isDown) {
+      const x = Math.min(startX, curX),
+        y = Math.min(startY, curY);
+      const w = Math.abs(curX - startX),
+        h = Math.abs(curY - startY);
+      ctx.save();
+      ctx.strokeStyle = "#ff4107";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+  imgSrc.onload = () => {
+    fitCanvasToBox();
+    redraw(false);
+  };
+  window.addEventListener("resize", () => {
+    fitCanvasToBox();
+    redraw(isDown);
+  });
+
+  canvas.addEventListener("mousedown", (e) => {
+    // reset crop setiap mulai seleksi baru
+    if (cropURL) URL.revokeObjectURL(cropURL);
+    cropURL = "";
+    cropBlob = null;
+    cropped.src = "";
+
+    const r = canvas.getBoundingClientRect();
+    startX = curX = Math.max(0, Math.min(cw, e.clientX - r.left));
+    startY = curY = Math.max(0, Math.min(ch, e.clientY - r.top));
+    isDown = true;
+    canvas.style.cursor = "nwse-resize";
+    redraw(true);
+  });
+  canvas.addEventListener("mousemove", (e) => {
+    if (!isDown) return;
+    const r = canvas.getBoundingClientRect();
+    curX = Math.max(0, Math.min(cw, e.clientX - r.left));
+    curY = Math.max(0, Math.min(ch, e.clientY - r.top));
+    redraw(true);
+  });
+  window.addEventListener("mouseup", () => {
+    if (!isDown) return;
+    isDown = false;
+    canvas.style.cursor = "crosshair";
+    const x = Math.min(startX, curX),
+      y = Math.min(startY, curY);
+    const w = Math.abs(curX - startX),
+      h = Math.abs(curY - startY);
+    if (w < 3 || h < 3) {
+      redraw(false);
+      return;
+    }
+
+    const scaleX = imgSrc.naturalWidth / cw;
+    const scaleY = imgSrc.naturalHeight / ch;
+    const sx = Math.round(x * scaleX),
+      sy = Math.round(y * scaleY);
+    const sw = Math.round(w * scaleX),
+      sh = Math.round(h * scaleY);
+
+    const temp = document.createElement("canvas");
+    temp.width = sw;
+    temp.height = sh;
+    temp.getContext("2d").drawImage(imgSrc, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    const fixed = document.createElement("canvas");
+    fixed.width = 640;
+    fixed.height = 640;
+    fixed.getContext("2d").drawImage(temp, 0, 0, 640, 640);
+
+    // >>> PENTING: kirim sebagai BLOB JPEG, bukan dataURL <<<
+    fixed.toBlob(
+      (blob) => {
+        if (!blob) return;
+        cropBlob = blob; // simpan untuk FormData
+        if (cropURL) URL.revokeObjectURL(cropURL);
+        cropURL = URL.createObjectURL(blob);
+        cropped.src = cropURL; // preview
+      },
+      "image/jpeg",
+      0.75
+    ); // kompres 75%
+    redraw(false);
+  });
+
+  // submit: kirim FILE + (opsional) Blob crop → tampilkan barengan
+  uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const file = fileInput.files?.[0];
+    if (!file) {
+      alert("Pilih file dulu.");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    // kirim crop dalam FIELD 'crop' kalau ada
+    if (cropBlob) {
+      fd.append("crop", cropBlob, "crop.jpg");
+    }
+
+    // UI loading
+    const btn = uploadForm.querySelector('button[type="submit"]');
+    const oldLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = "Memproses...";
+    yoloFull.style.visibility = "hidden";
+    yoloCrop.style.visibility = "hidden";
+    yoloLoader.classList.remove("d-none");
+
+    try {
+      const res = await fetch("/detect_both", { method: "POST", body: fd });
+      const out = await res.json();
+      if (out.status !== "success") {
+        alert("❌ Gagal deteksi: " + (out.message || ""));
+        return;
       }
-      function redraw(showSel) {
-        ctx.clearRect(0, 0, cw, ch);
-        if (imgSrc.src) ctx.drawImage(imgSrc, 0, 0, cw, ch);
-        if (showSel && isDown) {
-          const x = Math.min(startX, curX),
-            y = Math.min(startY, curY);
-          const w = Math.abs(curX - startX),
-            h = Math.abs(curY - startY);
-          ctx.save();
-          ctx.strokeStyle = "#ff4107";
-          ctx.lineWidth = 2;
-          ctx.setLineDash([6, 4]);
-          ctx.strokeRect(x, y, w, h);
-          ctx.setLineDash([]);
-          ctx.restore();
-        }
-      }
+      const bust = (u) => u + (u.includes("?") ? "&" : "?") + "t=" + Date.now();
+      if (out.yolo_full) yoloFull.src = bust(out.yolo_full);
+      if (out.yolo_crop) yoloCrop.src = bust(out.yolo_crop);
+      yoloFull.style.visibility = "visible";
+      yoloCrop.style.visibility = "visible";
+    } catch (e) {
+      alert("Terjadi error saat proses deteksi.");
+      console.error(e);
+    } finally {
+      yoloLoader.classList.add("d-none");
+      btn.disabled = false;
+      btn.innerHTML = oldLabel;
+    }
+  });
 
-      imgSrc.onload = () => {
-        fitCanvasToBox();
-        redraw(false);
-      };
-      window.addEventListener("resize", () => {
-        fitCanvasToBox();
-        redraw(isDown);
-      });
-
-      canvas.addEventListener("mousedown", (e) => {
-        const r = canvas.getBoundingClientRect();
-        startX = curX = Math.max(0, Math.min(cw, e.clientX - r.left));
-        startY = curY = Math.max(0, Math.min(ch, e.clientY - r.top));
-        isDown = true;
-        canvas.style.cursor = "nwse-resize";
-        redraw(true);
-      });
-      canvas.addEventListener("mousemove", (e) => {
-        if (!isDown) return;
-        const r = canvas.getBoundingClientRect();
-        curX = Math.max(0, Math.min(cw, e.clientX - r.left));
-        curY = Math.max(0, Math.min(ch, e.clientY - r.top));
-        redraw(true);
-      });
-      window.addEventListener("mouseup", async () => {
-        if (!isDown) return;
-        isDown = false;
-        canvas.style.cursor = "crosshair";
-        const x = Math.min(startX, curX),
-          y = Math.min(startY, curY);
-        const w = Math.abs(curX - startX),
-          h = Math.abs(curY - startY);
-        if (w < 3 || h < 3) {
-          redraw(false);
-          return;
-        }
-
-        // map ke ukuran asli
-        const scaleX = imgSrc.naturalWidth / cw;
-        const scaleY = imgSrc.naturalHeight / ch;
-        const sx = Math.round(x * scaleX),
-          sy = Math.round(y * scaleY);
-        const sw = Math.round(w * scaleX),
-          sh = Math.round(h * scaleY);
-
-        // crop → resize fill 640x640
-        const temp = document.createElement("canvas");
-        temp.width = sw;
-        temp.height = sh;
-        temp.getContext("2d").drawImage(imgSrc, sx, sy, sw, sh, 0, 0, sw, sh);
-
-        const fixed = document.createElement("canvas");
-        fixed.width = 640;
-        fixed.height = 640;
-        fixed.getContext("2d").drawImage(temp, 0, 0, 640, 640);
-
-        const dataUrl = fixed.toDataURL("image/png");
-        cropped.src = dataUrl;
-
-        // kirim ke server untuk YOLO crop
-        yoloLoader.classList.remove("d-none");
-        try {
-          const res = await fetch("/detect_crop", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: dataUrl }),
-          });
-          const out = await res.json();
-          if (out.status === "success") {
-            yoloCrop.src =
-              out.yolo_crop +
-              (out.yolo_crop.includes("?") ? "&" : "?") +
-              "t=" +
-              Date.now();
-          } else {
-            alert("❌ Gagal deteksi.");
-          }
-        } catch {
-          alert("Terjadi error saat deteksi.");
-        } finally {
-          yoloLoader.classList.add("d-none");
-        }
-
-        redraw(false);
-      });
-
-      // Reset
-      resetBtn.addEventListener("click", () => {
-        fileInput.value = "";
-        fileNameEl.value = "No file chosen";
-        livePrev.src = "";
-        livePrev.style.display = "none";
-        cropped.src = "";
-        yoloCrop.src = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
-        document.getElementById("yolo_full").src =
-          "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
-        location.href = "/"; // bersihkan hasil server juga
-      });
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    location.href = "/";
+  });
+</script>
+{% endblock %}

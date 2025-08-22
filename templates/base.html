@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}SIMASHA{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/main.css') }}"
+    />
+    {% block head %}{% endblock %}
+  </head>
+  <body class="bg-light d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-white shadow-sm fixed-top">
+      <div class="container-fluid d-flex align-items-center">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+          <img
+            src="{{ url_for('static', filename='logo/cover.png') }}"
+            alt="Logo SIMASHA"
+            style="height: 40px; width: auto"
+          />
+          <img
+            src="{{ url_for('static', filename='logo/logo text.png') }}"
+            alt="SIMASHA"
+            style="height: 40px; width: auto"
+          />
+        </a>
+
+        <!-- Toggler di samping logo -->
+        <button
+          class="navbar-toggler me-2"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainNavbar"
+          aria-controls="mainNavbar"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Menu collapse -->
+        <div class="collapse navbar-collapse" id="mainNavbar">
+          <ul class="navbar-nav me-auto mb-2">
+            <li class="nav-item">
+              <a href="/" class="nav-link">
+                <i class="bi bi-house-door"></i> Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/hasil_deteksi" class="nav-link"
+                ><i class="bi bi-table"></i> Hasil Deteksi</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <!-- Logout di kanan -->
+        <div class="ms-auto my-2">
+          <a href="/logout" class="btn btn-outline-dark">
+            <i class="bi bi-box-arrow-right"></i> Log Out
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="container-fluid my-5 flex-grow-1 pt-4">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white text-center py-3 shadow-sm mt-auto">
+      <p class="mb-0 text-muted">
+        © Copyright
+        <a href="#" class="fw-bold text-primary text-decoration-none">INAdik</a
+        >. All Rights Reserved
+      </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
