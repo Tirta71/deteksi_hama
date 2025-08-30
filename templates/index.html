@@ -37,9 +37,6 @@
             placeholder="No file chosen"
             readonly
           />
-          <button class="btn btn-primary" type="submit">
-            Upload & Deteksi
-          </button>
         </form>
 
         <hr />
@@ -71,6 +68,11 @@
           >
             Memproses...
           </div>
+        </div>
+        <div class="mt-2">
+          <button id="processBtn" class="btn btn-primary w-100" type="button">
+            Process
+          </button>
         </div>
       </div>
     </div>
@@ -130,9 +132,16 @@
   const yoloLoader = document.getElementById("yoloLoader");
   const resetBtn = document.getElementById("resetBtn");
 
+  const processBtn = document.getElementById("processBtn");
+
   let cropBlob = null; // <--- simpan blob JPEG crop di sini
   let cropURL = ""; // preview URL untuk blob (revoke jika ada)
   let lastObjectUrl = "";
+
+  // process button
+  processBtn.addEventListener("click", () => {
+    uploadForm.requestSubmit(); // aman dipakai meski tombol di luar form
+  });
 
   // pilih file → preview & sumber canvas
   fileInput.addEventListener("change", (e) => {
@@ -278,17 +287,12 @@
 
     const fd = new FormData();
     fd.append("file", file);
+    if (cropBlob) fd.append("crop", cropBlob, "crop.jpg");
 
-    // kirim crop dalam FIELD 'crop' kalau ada
-    if (cropBlob) {
-      fd.append("crop", cropBlob, "crop.jpg");
-    }
-
-    // UI loading
-    const btn = uploadForm.querySelector('button[type="submit"]');
-    const oldLabel = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = "Memproses...";
+    // UI loading pakai processBtn
+    const oldLabel = processBtn.innerHTML;
+    processBtn.disabled = true;
+    processBtn.innerHTML = "Memproses...";
     yoloFull.style.visibility = "hidden";
     yoloCrop.style.visibility = "hidden";
     yoloLoader.classList.remove("d-none");
@@ -305,13 +309,13 @@
       if (out.yolo_crop) yoloCrop.src = bust(out.yolo_crop);
       yoloFull.style.visibility = "visible";
       yoloCrop.style.visibility = "visible";
-    } catch (e) {
+    } catch (err) {
       alert("Terjadi error saat proses deteksi.");
-      console.error(e);
+      console.error(err);
     } finally {
       yoloLoader.classList.add("d-none");
-      btn.disabled = false;
-      btn.innerHTML = oldLabel;
+      processBtn.disabled = false;
+      processBtn.innerHTML = oldLabel;
     }
   });
 

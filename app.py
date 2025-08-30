@@ -20,7 +20,7 @@ app.config['UPLOAD_FOLDER']  = os.path.join(app.config['STATIC_DIR'], 'uploads')
 app.config['CROPS_DIR']      = os.path.join(app.config['STATIC_DIR'], 'crops')
 app.config['RESULTS_DIR']    = os.path.join(app.config['STATIC_DIR'], 'results')
 
-# (Tidak membatasi ukuran upload di Flask; kalau di depan ada Nginx/IIS, limiti di sana)
+# (Tidak membatasi ukuran upload di Flask)
 os.makedirs(app.config['STATIC_DIR'], exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['CROPS_DIR'], exist_ok=True)
@@ -101,7 +101,6 @@ def fmt_local(iso_str: str) -> str:
     dt = parse_iso(iso_str)
     if not dt:
         return "-"
-    # Tambah 7 jam biar jadi WIB
     dt = dt + timedelta(hours=7)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -112,11 +111,6 @@ def index():
 
 @app.route("/detect_both", methods=["POST"])
 def detect_both():
-    """
-    multipart/form-data:
-      - file : gambar asli (wajib)
-      - crop : file gambar hasil crop (opsional, image/jpeg/png)
-    """
     f = request.files.get("file")
     if not f or f.filename == "":
         return jsonify({"status": "error", "message": "No file"}), 400
@@ -183,10 +177,6 @@ def detect_both():
 
 @app.route("/hasil_deteksi", methods=["GET"])
 def hasil_deteksi():
-    """
-    Baca detect_log.jsonl -> gabungkan entri per filename (full & crop),
-    lalu render ke tabel (modal 'Lihat detail' menampilkan gambar).
-    """
     pairs = {}
     if os.path.exists(LOG_PATH):
         with open(LOG_PATH, "r", encoding="utf-8") as f:
