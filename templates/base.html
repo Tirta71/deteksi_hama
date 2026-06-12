@@ -20,62 +20,123 @@
   </head>
   <body class="bg-light d-flex flex-column min-vh-100">
     <!-- Navbar -->
-    <nav class="navbar navbar-light bg-white shadow-sm fixed-top">
-      <div class="container-fluid d-flex align-items-center">
-        <!-- Brand -->
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+    <nav class="navbar navbar-light bg-white shadow-sm fixed-top simasha-navbar">
+      <div class="container-fluid px-3 px-lg-4">
+        <a
+          class="navbar-brand simasha-brand d-flex align-items-center gap-2"
+          href="{{ url_for('index') if session.get('user_id') else url_for('login') }}"
+        >
           <img
             src="{{ url_for('static', filename='logo/cover.png') }}"
             alt="Logo SIMASHA"
-            style="height: 40px; width: auto"
+            class="simasha-brand-icon"
           />
           <img
             src="{{ url_for('static', filename='logo/logo text.png') }}"
             alt="SIMASHA"
-            style="height: 40px; width: auto"
+            class="simasha-brand-text"
           />
         </a>
 
-        <!-- Toggler di samping logo -->
         <button
-          class="navbar-toggler me-2"
+          class="navbar-toggler simasha-menu-button"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#mainNavbar"
-          aria-controls="mainNavbar"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#mainMenu"
+          aria-controls="mainMenu"
+          aria-label="Buka menu"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-
-        <!-- Menu collapse -->
-        <div class="collapse navbar-collapse" id="mainNavbar">
-          <ul class="navbar-nav me-auto mb-2">
-            <li class="nav-item">
-              <a href="/" class="nav-link">
-                <i class="bi bi-house-door"></i> Home
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/hasil_deteksi" class="nav-link"
-                ><i class="bi bi-table"></i> Hasil Deteksi</a
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- Logout di kanan -->
-        <div class="ms-auto my-2">
-          <a href="/logout" class="btn btn-outline-dark">
-            <i class="bi bi-box-arrow-right"></i> Log Out
-          </a>
-        </div>
       </div>
     </nav>
 
+    <div
+      class="offcanvas offcanvas-end simasha-menu"
+      tabindex="-1"
+      id="mainMenu"
+      aria-labelledby="mainMenuLabel"
+    >
+      <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <img
+            src="{{ url_for('static', filename='logo/cover.png') }}"
+            alt="Logo SIMASHA"
+            class="simasha-menu-logo"
+          />
+          <div>
+            <h5 class="offcanvas-title mb-0" id="mainMenuLabel">SIMASHA</h5>
+            <small class="text-muted">Menu aplikasi</small>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+          aria-label="Tutup menu"
+        ></button>
+      </div>
+
+      <div class="offcanvas-body d-flex flex-column">
+        {% if session.get('user_id') %}
+        <div class="simasha-menu-user mb-4">
+          <i class="bi bi-person-circle"></i>
+          <div>
+            <div class="fw-semibold">{{ session.get('user_name') }}</div>
+            <small>{{ session.get('user_email') }}</small>
+          </div>
+        </div>
+
+        <div class="simasha-menu-label">Navigasi</div>
+        <nav class="nav flex-column gap-2">
+          <a
+            href="{{ url_for('index') }}"
+            class="simasha-menu-link {% if request.endpoint == 'index' %}active{% endif %}"
+          >
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+          </a>
+          <a
+            href="{{ url_for('hasil_deteksi') }}"
+            class="simasha-menu-link {% if request.endpoint == 'hasil_deteksi' %}active{% endif %}"
+          >
+            <i class="bi bi-table"></i>
+            <span>Hasil Deteksi</span>
+          </a>
+        </nav>
+
+        <div class="mt-auto pt-4">
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-dark w-100">
+            <i class="bi bi-box-arrow-right"></i> Log Out
+          </a>
+        </div>
+        {% else %}
+        <div class="simasha-menu-label">Akun</div>
+        <p class="text-muted small mb-4">
+          Masuk atau buat akun untuk menggunakan fitur deteksi.
+        </p>
+        <div class="d-grid gap-2">
+          <a
+            href="{{ url_for('login') }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="bi bi-box-arrow-in-right"></i>
+            Login
+          </a>
+          <a
+            href="{{ url_for('register') }}"
+            class="btn btn-primary"
+          >
+            <i class="bi bi-person-plus"></i>
+            Register
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
     <!-- Content -->
-    <main class="container-fluid my-5 flex-grow-1 pt-4">
+    <main class="container-fluid app-main flex-grow-1">
       {% block content %}{% endblock %}
     </main>
 
@@ -89,6 +150,49 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      function initTooltips() {
+        if (!window.bootstrap || !bootstrap.Tooltip) return;
+
+        document
+          .querySelectorAll('[data-bs-toggle="tooltip"]:not(.result-tooltip)')
+          .forEach((el) => {
+            bootstrap.Tooltip.getOrCreateInstance(el, {
+              container: "body",
+              trigger: "hover focus",
+            });
+          });
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTooltips);
+      } else {
+        initTooltips();
+      }
+    </script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+      const flashMessages = {{ messages|tojson }};
+      const sweetAlertIcons = {
+        danger: "error",
+        error: "error",
+        info: "info",
+        success: "success",
+        warning: "warning",
+      };
+
+      flashMessages.forEach(([category, message]) => {
+        Swal.fire({
+          icon: sweetAlertIcons[category] || "info",
+          title: message,
+          confirmButtonColor: "#0d6efd",
+        });
+      });
+    </script>
+    {% endif %}
+    {% endwith %}
     {% block scripts %}{% endblock %}
   </body>
 </html>

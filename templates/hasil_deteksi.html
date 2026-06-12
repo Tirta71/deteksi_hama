@@ -1,240 +1,16 @@
 {% extends 'base.html' %} {% block title %}SIMASHA - Hasil Deteksi{% endblock %}
 {% block content %}
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title mb-3">Hasil Deteksi</h5>
-
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle">
-        <thead class="table-light">
-          <tr class="text-center">
-            <th rowspan="2">Filename</th>
-            <th colspan="5">YOLO Full</th>
-            <th colspan="5">YOLO Augementasi (Zoom)</th>
-          </tr>
-          <tr class="text-center">
-            <th>Time</th>
-            <th>Speed (ms)</th>
-            <th>Confidence</th>
-            <th>Classes</th>
-            <th>Detail</th>
-            <th>Time</th>
-            <th>Speed (ms)</th>
-            <th>Confidence</th>
-            <th>Classes</th>
-            <th>Detail</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-          <tr>
-            <td class="text-nowrap">{{ r.filename }}</td>
-
-            <!-- FULL -->
-            <td class="text-nowrap">{{ r.full_time }}</td>
-            <td class="text-center">{{ r.full_speed }}</td>
-            <td class="text-center">{{ "%.3f"|format(r.full_avgconf) }}</td>
-            <td>{{ r.full_classes }}</td>
-            <td class="text-center">
-              {% if r.full_img %}
-              <!-- Trigger Button -->
-              <button
-                class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2 shadow-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#modalFull{{ loop.index }}"
-              >
-                <i class="bi bi-eye"></i> Lihat Hasil
-              </button>
-
-              <!-- Modal Full -->
-              <div
-                class="modal fade"
-                id="modalFull{{ loop.index }}"
-                tabindex="-1"
-                aria-hidden="true"
-              >
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                  <div
-                    class="modal-content border-0 shadow-lg rounded-4 overflow-hidden"
-                  >
-                    <!-- Header -->
-                    <div class="modal-header bg-primary text-white">
-                      <h5 class="modal-title">
-                        <i class="bi bi-image me-2"></i>
-                        Deteksi Full - {{ r.filename }}
-                      </h5>
-                      <button
-                        type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"
-                      ></button>
-                    </div>
-
-                    <!-- Body -->
-                    <div class="modal-body">
-                      <div
-                        class="ratio ratio-16x9 rounded-3 border overflow-hidden"
-                      >
-                        <img
-                          src="/{{ r.full_img }}"
-                          alt="Full Detection"
-                          class="w-100 h-100"
-                          style="object-fit: contain; background: #000"
-                          loading="lazy"
-                        />
-                      </div>
-                      <div class="mt-3 small text-muted text-center">
-                        <i class="bi bi-clock"></i> Waktu: {{ r.full_time or '-'
-                        }} | <i class="bi bi-speedometer2"></i> Speed: {{
-                        r.full_speed or '-' }} ms |
-                        <i class="bi bi-bar-chart"></i> Conf: {{
-                        "%.2f"|format(r.full_avgconf or 0) }}
-                      </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="modal-footer bg-light">
-                      <a
-                        href="/{{ r.full_img }}"
-                        download
-                        class="btn btn-primary"
-                      >
-                        <i class="bi bi-download"></i> Download
-                      </a>
-                      <a
-                        href="/{{ r.full_img }}"
-                        target="_blank"
-                        class="btn btn-outline-secondary"
-                      >
-                        <i class="bi bi-box-arrow-up-right"></i> Buka Tab Baru
-                      </a>
-                      <button
-                        type="button"
-                        class="btn btn-light"
-                        data-bs-dismiss="modal"
-                      >
-                        Tutup
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {% else %} - {% endif %}
-            </td>
-
-            <!-- CROP -->
-            <td class="text-nowrap">{{ r.crop_time }}</td>
-            <td class="text-center">
-              {% if r.crop_speed %}{{ r.crop_speed }}{% else %}-{% endif %}
-            </td>
-            <td class="text-center">
-              {% if r.crop_time != "-" %}{{ "%.3f"|format(r.crop_avgconf) }}{%
-              else %}-{% endif %}
-            </td>
-            <td>
-              {% if r.crop_time != "-" %}{{ r.crop_classes }}{% else %}-{% endif
-              %}
-            </td>
-            <td class="text-center">
-              {% if r.crop_img %}
-              <!-- Trigger Button -->
-              <button
-                class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2 shadow-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#modalCrop{{ loop.index }}"
-              >
-                <i class="bi bi-eye"></i> Lihat Hasil
-              </button>
-
-              <!-- Modal -->
-              <div
-                class="modal fade"
-                id="modalCrop{{ loop.index }}"
-                tabindex="-1"
-                aria-hidden="true"
-              >
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                  <div
-                    class="modal-content border-0 shadow-lg rounded-4 overflow-hidden"
-                  >
-                    <!-- Header -->
-                    <div class="modal-header bg-primary text-white">
-                      <h5 class="modal-title">
-                        <i class="bi bi-image me-2"></i>
-                        Deteksi Augmentasi - {{ r.filename }}
-                      </h5>
-                      <button
-                        type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"
-                      ></button>
-                    </div>
-
-                    <!-- Body -->
-                    <div class="modal-body">
-                      <div
-                        class="ratio ratio-16x9 rounded-3 border overflow-hidden"
-                      >
-                        <img
-                          src="/{{ r.crop_img }}"
-                          alt="Crop Detection"
-                          class="w-100 h-100"
-                          style="object-fit: contain; background: #000"
-                          loading="lazy"
-                        />
-                      </div>
-                      <div class="mt-3 small text-muted text-center">
-                        <i class="bi bi-clock"></i> Waktu: {{ r.crop_time or '-'
-                        }} | <i class="bi bi-speedometer2"></i> Speed: {{
-                        r.crop_speed or '-' }} ms |
-                        <i class="bi bi-bar-chart"></i> Conf: {{
-                        "%.2f"|format(r.crop_avgconf or 0) }}
-                      </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="modal-footer bg-light">
-                      <a
-                        href="/{{ r.crop_img }}"
-                        download
-                        class="btn btn-primary"
-                      >
-                        <i class="bi bi-download"></i> Download
-                      </a>
-                      <a
-                        href="/{{ r.crop_img }}"
-                        target="_blank"
-                        class="btn btn-outline-secondary"
-                      >
-                        <i class="bi bi-box-arrow-up-right"></i> Buka Tab Baru
-                      </a>
-                      <button
-                        type="button"
-                        class="btn btn-light"
-                        data-bs-dismiss="modal"
-                      >
-                        Tutup
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {% else %} - {% endif %}
-            </td>
-          </tr>
-          {% endfor %} {% if not rows %}
-          <tr>
-            <td colspan="11" class="text-center text-muted">
-              Belum ada log deteksi.
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
+<section class="results-card">
+  <div class="results-header">
+    <div>
+      <h1 class="results-title">Hasil Deteksi</h1>
+      <p class="results-subtitle mb-0">
+        Riwayat deteksi tersimpan dari proses YOLO full dan augmentasi zoom.
+      </p>
     </div>
 
-    <div class="mt-3 d-flex gap-2">
-      <a href="/" class="btn btn-outline-primary">
+    <div class="results-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
         <i class="bi bi-arrow-left"></i> Kembali
       </a>
       <a
@@ -245,5 +21,396 @@
       </a>
     </div>
   </div>
-</div>
+
+  {% if rows %}
+  <div class="table-responsive results-table-wrap">
+    <table class="table results-table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>YOLO Full</th>
+          <th>Augmentasi Zoom</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td class="results-file-cell">
+            <div class="results-file-name">{{ r.filename }}</div>
+            <div class="results-time">
+              <i class="bi bi-clock"></i>
+              {{ r.full_time if r.full_time != "-" else r.crop_time }}
+            </div>
+          </td>
+
+          <td>
+            <div class="result-summary">
+              <div class="result-summary-top">
+                <span
+                  class="result-class-pill result-tooltip"
+                  data-bs-title="Jenis hama: {{ r.full_class_summary or '-' }}"
+                >
+                  {{ r.full_class_summary or "-" }}
+                </span>
+              </div>
+
+              <div class="result-metrics">
+                <span
+                  class="result-metric result-tooltip"
+                  data-bs-title="Total hama: {{ r.full_total_pests or 0 }}"
+                >
+                  <i class="bi bi-bug"></i>
+                  Total {{ r.full_total_pests or 0 }}
+                </span>
+                <span
+                  class="result-metric result-tooltip"
+                  data-bs-title="Accuracy: {{ '%.1f'|format((r.full_avgconf or 0) * 100) }}%"
+                >
+                  <i class="bi bi-bar-chart"></i>
+                  {{ "%.1f"|format((r.full_avgconf or 0) * 100) }}%
+                </span>
+                <span
+                  class="result-metric result-tooltip"
+                  data-bs-title="Speed: {{ r.full_speed or 0 }} ms"
+                >
+                  <i class="bi bi-speedometer2"></i>
+                  {{ r.full_speed or 0 }} ms
+                </span>
+              </div>
+
+              {% if r.full_img %}
+              <button
+                class="btn btn-sm btn-outline-primary result-detail-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#modalFull{{ loop.index }}"
+              >
+                <i class="bi bi-eye"></i> Lihat Hasil
+              </button>
+              {% else %}
+              <span class="text-muted small">Tidak ada gambar</span>
+              {% endif %}
+            </div>
+
+            {% if r.full_img %}
+            <div
+              class="modal fade"
+              id="modalFull{{ loop.index }}"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content result-modal">
+                  <div class="modal-header">
+                    <div>
+                      <h5 class="modal-title">YOLO Full</h5>
+                      <small class="text-muted">{{ r.filename }}</small>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Tutup"
+                    ></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <div class="ratio ratio-16x9 result-modal-image">
+                      <img
+                        src="/{{ r.full_img }}"
+                        alt="Full Detection"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div class="result-modal-meta">
+                      <span
+                        class="result-tooltip"
+                        data-bs-title="Waktu deteksi: {{ r.full_time }}"
+                      >
+                        <i class="bi bi-clock"></i> {{ r.full_time }}
+                      </span>
+                      <span
+                        class="result-tooltip"
+                        data-bs-title="Speed: {{ r.full_speed or 0 }} ms"
+                      >
+                        <i class="bi bi-speedometer2"></i>
+                        {{ r.full_speed or 0 }} ms
+                      </span>
+                      <span
+                        class="result-tooltip"
+                        data-bs-title="Accuracy: {{ '%.1f'|format((r.full_avgconf or 0) * 100) }}%"
+                      >
+                        <i class="bi bi-bar-chart"></i>
+                        {{ "%.1f"|format((r.full_avgconf or 0) * 100) }}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="modal-footer">
+                    <a
+                      href="/{{ r.full_img }}"
+                      download
+                      class="btn btn-primary"
+                    >
+                      <i class="bi bi-download"></i> Download
+                    </a>
+                    <a
+                      href="/{{ r.full_img }}"
+                      target="_blank"
+                      class="btn btn-outline-secondary"
+                    >
+                      <i class="bi bi-box-arrow-up-right"></i> Buka Tab Baru
+                    </a>
+                    <button
+                      type="button"
+                      class="btn btn-light"
+                      data-bs-dismiss="modal"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </td>
+
+          <td>
+            <div class="result-summary">
+              <div class="result-summary-top">
+                <span
+                  class="result-class-pill result-tooltip"
+                  data-bs-title="Jenis hama: {{ r.crop_class_summary or '-' }}"
+                >
+                  {{ r.crop_class_summary or "-" }}
+                </span>
+              </div>
+
+              <div class="result-metrics">
+                <span
+                  class="result-metric result-tooltip"
+                  data-bs-title="Total hama: {{ r.crop_total_pests or 0 }}"
+                >
+                  <i class="bi bi-bug"></i>
+                  Total {{ r.crop_total_pests or 0 }}
+                </span>
+                <span
+                  class="result-metric result-tooltip"
+                  data-bs-title="Accuracy: {{ '%.1f'|format((r.crop_avgconf or 0) * 100) }}%"
+                >
+                  <i class="bi bi-bar-chart"></i>
+                  {{ "%.1f"|format((r.crop_avgconf or 0) * 100) }}%
+                </span>
+                <span
+                  class="result-metric result-tooltip"
+                  data-bs-title="Speed: {{ r.crop_speed or 0 }} ms"
+                >
+                  <i class="bi bi-speedometer2"></i>
+                  {{ r.crop_speed or 0 }} ms
+                </span>
+              </div>
+
+              {% if r.crop_img %}
+              <div class="result-button-row">
+                <button
+                  class="btn btn-sm btn-outline-primary result-detail-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalCrop{{ loop.index }}"
+                >
+                  <i class="bi bi-eye"></i> Lihat Hasil
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary result-detail-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalGrid{{ loop.index }}"
+                  {% if not r.per_grid_results %}disabled{% endif %}
+                >
+                  <i class="bi bi-grid-3x3-gap"></i> Lihat Hasil Per Grid
+                </button>
+              </div>
+              {% else %}
+              <span class="text-muted small">Tidak ada gambar</span>
+              {% endif %}
+            </div>
+
+            {% if r.crop_img %}
+            <div
+              class="modal fade"
+              id="modalCrop{{ loop.index }}"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content result-modal">
+                  <div class="modal-header">
+                    <div>
+                      <h5 class="modal-title">Augmentasi Zoom</h5>
+                      <small class="text-muted">{{ r.filename }}</small>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Tutup"
+                    ></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <div class="ratio ratio-16x9 result-modal-image">
+                      <img
+                        src="/{{ r.crop_img }}"
+                        alt="Crop Detection"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div class="result-modal-meta">
+                      <span
+                        class="result-tooltip"
+                        data-bs-title="Waktu deteksi: {{ r.crop_time }}"
+                      >
+                        <i class="bi bi-clock"></i> {{ r.crop_time }}
+                      </span>
+                      <span
+                        class="result-tooltip"
+                        data-bs-title="Speed: {{ r.crop_speed or 0 }} ms"
+                      >
+                        <i class="bi bi-speedometer2"></i>
+                        {{ r.crop_speed or 0 }} ms
+                      </span>
+                      <span
+                        class="result-tooltip"
+                        data-bs-title="Accuracy: {{ '%.1f'|format((r.crop_avgconf or 0) * 100) }}%"
+                      >
+                        <i class="bi bi-bar-chart"></i>
+                        {{ "%.1f"|format((r.crop_avgconf or 0) * 100) }}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="modal-footer">
+                    <a
+                      href="/{{ r.crop_img }}"
+                      download
+                      class="btn btn-primary"
+                    >
+                      <i class="bi bi-download"></i> Download
+                    </a>
+                    <a
+                      href="/{{ r.crop_img }}"
+                      target="_blank"
+                      class="btn btn-outline-secondary"
+                    >
+                      <i class="bi bi-box-arrow-up-right"></i> Buka Tab Baru
+                    </a>
+                    <button
+                      type="button"
+                      class="btn btn-light"
+                      data-bs-dismiss="modal"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% if r.per_grid_results %}
+            <div
+              class="modal fade"
+              id="modalGrid{{ loop.index }}"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <div
+                class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+              >
+                <div class="modal-content result-modal">
+                  <div class="modal-header">
+                    <div>
+                      <h5 class="modal-title">Hasil YOLO Per Grid</h5>
+                      <small class="text-muted">{{ r.filename }}</small>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Tutup"
+                    ></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <div class="grid-results">
+                      {% for grid in r.per_grid_results %}
+                      <article class="grid-result-card">
+                        <div class="grid-result-image">
+                          {% if grid.image %}
+                          <img
+                            src="/{{ grid.image }}"
+                            alt="Grid {{ grid.grid }}"
+                            loading="lazy"
+                          />
+                          {% else %}
+                          <div class="grid-result-empty">No image</div>
+                          {% endif %}
+                        </div>
+
+                        <div class="grid-result-body">
+                          <div class="grid-result-title">
+                            Grid {{ grid.grid }}
+                          </div>
+                          <div class="grid-result-summary">
+                            {{ grid.class_summary or "-" }}
+                          </div>
+                          <div class="result-metrics mt-2">
+                            <span
+                              class="result-metric result-tooltip"
+                              data-bs-title="Total hama grid {{ grid.grid }}: {{ grid.total_pests or 0 }}"
+                            >
+                              <i class="bi bi-bug"></i>
+                              Total {{ grid.total_pests or 0 }}
+                            </span>
+                            <span
+                              class="result-metric result-tooltip"
+                              data-bs-title="Accuracy grid {{ grid.grid }}: {{ '%.1f'|format((grid.avg_conf or 0) * 100) }}%"
+                            >
+                              <i class="bi bi-bar-chart"></i>
+                              {{ "%.1f"|format((grid.avg_conf or 0) * 100) }}%
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-light"
+                      data-bs-dismiss="modal"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="results-empty">
+    <i class="bi bi-inbox"></i>
+    <h2>Belum ada hasil deteksi</h2>
+    <p>
+      Mulai proses deteksi dari halaman utama untuk melihat riwayat di sini.
+    </p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+      <i class="bi bi-arrow-left"></i> Ke Halaman Utama
+    </a>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}

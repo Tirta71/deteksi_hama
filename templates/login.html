@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}SIMASHA - Login{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+  <div class="auth-card card shadow-sm">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <img
+          src="{{ url_for('static', filename='logo/cover.png') }}"
+          alt="Logo SIMASHA"
+          class="auth-logo mb-3"
+        />
+        <h1 class="h4 mb-1">Login</h1>
+        <p class="text-muted mb-0">Masuk untuk melanjutkan ke SIMASHA.</p>
+      </div>
+
+      {% if errors and errors.form %}
+      <div class="alert alert-danger" role="alert">{{ errors.form }}</div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control {% if errors and errors.email %}is-invalid{% endif %}"
+            id="email"
+            name="email"
+            value="{{ email or '' }}"
+            autocomplete="email"
+            required
+          />
+          {% if errors and errors.email %}
+          <div class="invalid-feedback">{{ errors.email }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control {% if errors and errors.password %}is-invalid{% endif %}"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+          {% if errors and errors.password %}
+          <div class="invalid-feedback">{{ errors.password }}</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-box-arrow-in-right"></i> Login
+        </button>
+      </form>
+
+      <div class="text-center mt-4">
+        <span class="text-muted">Belum punya akun?</span>
+        <a href="{{ url_for('register') }}" class="fw-semibold text-decoration-none">
+          Register
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

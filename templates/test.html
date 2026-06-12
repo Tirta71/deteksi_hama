@@ -43,156 +43,6 @@
       </div>
     </nav>
 
-    <main class="container-fluid my-5 flex-grow-1">
-      <div class="row g-4">
-        <!-- Live Camera + Upload -->
-        <div class="col-md-4">
-          <div class="card h-full shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title mb-3">Live Camera</h5>
-
-              <!-- Preview 16:9 -->
-              <div
-                class="ratio ratio-16x9 rounded overflow-hidden border mb-3 bg-light"
-              >
-                <img
-                  id="livePreview"
-                  src=""
-                  alt="Live Preview"
-                  class="w-100 h-100"
-                  style="object-fit: cover; display: none"
-                />
-              </div>
-
-              <!-- Form upload (POST /) akan auto submit setelah preview muncul) -->
-              <form
-                id="uploadForm"
-                method="POST"
-                enctype="multipart/form-data"
-                class="input-group mb-3"
-              >
-                <button type="button" class="btn btn-primary">
-                  <i class="bi bi-broadcast-pin me-1"></i> Live
-                </button>
-
-                <input
-                  type="file"
-                  id="fileInput"
-                  name="file"
-                  accept="image/*"
-                  class="d-none"
-                />
-                <label for="fileInput" class="btn btn-outline-secondary"
-                  >Choose File</label
-                >
-
-                <input
-                  type="text"
-                  id="fileName"
-                  class="form-control"
-                  placeholder="No file chosen"
-                  readonly
-                />
-              </form>
-
-              <h6 class="text-muted mb-2">Stepper Motor Alignment</h6>
-              <div class="d-grid gap-2">
-                <div class="d-flex justify-content-center">
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill me-2"
-                  >
-                    <i class="bi bi-arrow-up"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill"
-                  >
-                    <i class="bi bi-arrow-down"></i>
-                  </button>
-                </div>
-                <div class="d-flex">
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill me-2"
-                  >
-                    <i class="bi bi-arrow-left"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary flex-fill"
-                  >
-                    <i class="bi bi-arrow-right"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Input (canvas) + Crop preview -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Input Without Augmentation</h5>
-              <div class="media-640 mb-3">
-                <canvas id="canvas"></canvas>
-              </div>
-
-              <h5 class="card-title">Input With Augmentation</h5>
-              <div class="media-640 mb-3 position-relative">
-                <img id="cropped" src="" alt="Hasil seleksi" />
-                <div
-                  id="cropLoader"
-                  class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
-                >
-                  Memproses...
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Predictions -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Prediction Without Augmentation</h5>
-              <div class="media-640 mb-2">
-                <img
-                  id="yolo_full"
-                  src="{{ yolo_full_url if yolo_full_url else 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=' }}"
-                  alt="Hasil YOLO Full"
-                  loading="lazy"
-                />
-              </div>
-
-              <h5 class="card-title mt-3">Prediction With Augmentation</h5>
-              <div class="media-640 mb-2 position-relative">
-                <img
-                  id="yolo_crop"
-                  src="{{ yolo_crop_url if yolo_crop_url else 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=' }}"
-                  alt="Hasil YOLO Crop"
-                  loading="lazy"
-                />
-                <div
-                  id="yoloLoader"
-                  class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
-                >
-                  Deteksi...
-                </div>
-              </div>
-              {% if filename %}
-              <div class="d-grid">
-                <button id="resetBtn" class="btn btn-warning">🔄 Reset</button>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
     <footer class="bg-white text-center py-3 shadow-sm mt-auto">
       <p class="mb-0 text-muted">
         © Copyright
@@ -201,6 +51,7 @@
       </p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       // ==== Elemen ====
       const uploadForm = document.getElementById("uploadForm");
@@ -350,10 +201,18 @@
               "t=" +
               Date.now();
           } else {
-            alert("❌ Gagal deteksi.");
+            Swal.fire({
+              icon: "error",
+              title: "Gagal deteksi",
+              confirmButtonColor: "#0d6efd",
+            });
           }
         } catch {
-          alert("Terjadi error saat deteksi.");
+          Swal.fire({
+            icon: "error",
+            title: "Terjadi error saat deteksi.",
+            confirmButtonColor: "#0d6efd",
+          });
         } finally {
           yoloLoader.classList.add("d-none");
         }

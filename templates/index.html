@@ -1,11 +1,12 @@
 {% extends 'base.html' %} {% block title %}SIMASHA - Upload & Deteksi{% endblock
 %} {% block content %}
+
 <div class="row g-4">
   <!-- Upload -->
   <div class="col-md-4">
-    <div class="card shadow-sm h-full">
+    <div class="card shadow-sm h-100">
       <div class="card-body">
-        <h5 class="card-title mb-3">Upload Gambar</h5>
+        <h5 class="card-title mb-3">Image Upload</h5>
 
         <div
           class="ratio ratio-16x9 rounded overflow-hidden border mb-3 bg-light"
@@ -27,9 +28,11 @@
             accept="image/*"
             class="d-none"
           />
-          <label for="fileInput" class="btn btn-outline-secondary"
-            >Choose File</label
-          >
+
+          <label for="fileInput" class="btn btn-outline-secondary">
+            Choose File
+          </label>
+
           <input
             type="text"
             id="fileName"
@@ -39,288 +42,848 @@
           />
         </form>
 
+        <div class="mt-3">
+          <button id="processBtn" class="btn btn-primary w-100" type="button">
+            Process Detection
+          </button>
+        </div>
+
         <hr />
+
         <a
           href="{{ url_for('hasil_deteksi') }}"
           class="btn btn-outline-primary w-100"
         >
-          <i class="bi bi-table"></i> Lihat Hasil Deteksi
+          <i class="bi bi-table"></i> View Detail
         </a>
+
+        <div class="card bg-light border-0 mt-3">
+          <div class="card-body text-center">
+            <small class="text-muted d-block mb-1">Detection Status</small>
+            <h2 id="pestStatus" style="font-weight: bold">-</h2>
+          </div>
+        </div>
+
+        <div class="card bg-light border-0 mt-3">
+          <div class="card-body text-center py-3">
+            <small class="text-muted d-block mb-1">Pest Type</small>
+            <h4 id="pestType" class="mb-0">-</h4>
+          </div>
+        </div>
+
+        <div class="card bg-light border-0 mt-3">
+          <div class="card-body text-center py-3">
+            <small class="text-muted d-block mb-1">Accuracy</small>
+            <h4 id="accuracyText" class="mb-0">-</h4>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Input (canvas) + Crop preview -->
-  <div class="col-md-4">
-    <div class="card shadow-sm h-100">
+  <!-- Final Predictions -->
+  <div class="col-md-8">
+    <div class="card shadow-sm h-full">
       <div class="card-body">
-        <h5 class="card-title">Input Without Augmentation</h5>
-        <div class="media-640 mb-3">
-          <canvas id="canvas"></canvas>
-        </div>
-
-        <h5 class="card-title mt-3">Input With Augmentation</h5>
-        <div class="media-640 position-relative">
-          <img id="cropped" src="" alt="Hasil crop" />
-          <div
-            id="cropLoader"
-            class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
-          >
-            Memproses...
+        <div class="result-panel-header">
+          <div>
+            <!-- <h5 class="card-title mb-1">Final Detection Result</h5>
+            <p class="text-muted small mb-0">
+              Hasil deteksi akhir setelah proses YOLOv8 per grid dan merge
+              detection.
+            </p> -->
           </div>
-        </div>
-        <div class="mt-2">
-          <button id="processBtn" class="btn btn-primary w-100" type="button">
-            Process
+          <button
+            id="resetBtn"
+            class="btn btn-outline-secondary reset-result-btn"
+            type="button"
+          >
+            <i class="bi bi-arrow-clockwise"></i>
+            <span>Reset</span>
           </button>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Predictions -->
-  <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h5 class="card-title">Prediction Without Augmentation</h5>
-        <div class="media-640 mb-2 position-relative">
-          <img
-            id="yolo_full"
-            src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
-            alt="Hasil YOLO Full"
-            loading="lazy"
-          />
-        </div>
+        <div class="row g-3">
+          <!-- YOLO Original -->
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100 bg-light">
+              <h6 class="fw-bold mb-1">YOLOv8 Original</h6>
+              <p class="text-muted small mb-2">
+                Deteksi langsung dari gambar penuh.
+              </p>
 
-        <h5 class="card-title mt-3">Prediction With Augmentation</h5>
-        <div class="media-640 mb-2 position-relative">
-          <img
-            id="yolo_crop"
-            src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
-            alt="Hasil YOLO Crop"
-            loading="lazy"
-          />
-          <div
-            id="yoloLoader"
-            class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
-          >
-            Deteksi...
+              <div
+                class="media-640 position-relative border rounded overflow-hidden bg-white"
+              >
+                <img
+                  id="yolo_full"
+                  src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                  alt="YOLO Original"
+                  loading="lazy"
+                />
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="d-grid">
-          <button id="resetBtn" class="btn btn-warning">🔄 Reset</button>
+          <!-- Hasil Akhir Method -->
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100 bg-light">
+              <h6 class="fw-bold mb-1">Hasil Akhir Method</h6>
+              <p class="text-muted small mb-2">
+                Hasil akhir setelah YOLOv8 per grid dan merge detection.
+              </p>
+
+              <div
+                class="media-640 position-relative border rounded overflow-hidden bg-white"
+              >
+                <img
+                  id="yolo_crop"
+                  src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                  alt="Hasil Akhir"
+                  loading="lazy"
+                />
+
+                <span
+                  id="blurLabel"
+                  class="badge bg-danger position-absolute top-0 end-0 m-2 d-none"
+                >
+                  NOT DETECTED
+                </span>
+
+                <div
+                  id="yoloLoader"
+                  class="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-50 text-white px-3 py-1 rounded d-none"
+                >
+                  Deteksi...
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Loading Proses Deteksi -->
+<div id="processLoadingSection" class="row g-4 mt-1 d-none">
+  <div class="col-12">
+    <div class="card shadow-sm border-primary">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <h5 class="card-title mb-1">Memproses Deteksi</h5>
+            <p class="text-muted small mb-0">
+              Sistem sedang menjalankan tahapan preprocessing dan YOLOv8.
+            </p>
+          </div>
+
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div class="progress mb-3" style="height: 10px">
+          <div
+            id="processProgressBar"
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-md-3">
+            <div id="step1" class="process-step p-3 border rounded bg-light">
+              1. Input Citra
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step2" class="process-step p-3 border rounded bg-light">
+              2. HSV Color Masking
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step3" class="process-step p-3 border rounded bg-light">
+              3. Morphological Operation
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step4" class="process-step p-3 border rounded bg-light">
+              4. Contour Masking
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step5" class="process-step p-3 border rounded bg-light">
+              5. Griding / Pembagian Area
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step6" class="process-step p-3 border rounded bg-light">
+              6. Zoom-In Crop
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step7" class="process-step p-3 border rounded bg-light">
+              7. YOLOv8 Detection Per Grid
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div id="step8" class="process-step p-3 border rounded bg-light">
+              8. Hasil Akhir
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Semua Tahapan Proses -->
+<div id="processSection" class="row g-4 mt-1 d-none">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Tahapan Proses Deteksi</h5>
+
+        <p class="text-muted small">
+          Visualisasi lengkap sesuai method: Input Citra, HSV Color Masking,
+          Morphological Operation, Contour Masking, Griding, Zoom-In Crop,
+          YOLOv8 Detection, dan Hasil Akhir.
+        </p>
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">1. Input Citra</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processOriginal"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">2. HSV Color Masking</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processHSV"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">3. Morphological Operation</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processMorphology"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">4. Contour Masking</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processContourMasking"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">5. Griding / Pembagian Area</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processGrid"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">6. Zoom-In Crop</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processZoomCrop"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">7. YOLOv8 Detection</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processYoloDetection"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">8. Hasil Akhir</h6>
+                <div
+                  class="ratio ratio-1x1 bg-light border rounded overflow-hidden"
+                >
+                  <img
+                    id="processFinalResult"
+                    src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+                    class="w-100 h-100"
+                    style="object-fit: contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md">
+            <div class="card h-100 border-primary">
+              <div class="card-body">
+                <h6 class="card-title">Detection Info</h6>
+
+                <div class="small text-muted mb-2">Total Hama Terdeteksi</div>
+                <div id="totalPestText" class="fw-semibold mb-3">-</div>
+
+                <div class="small text-muted mb-2">Jenis Hama Terdeteksi</div>
+                <div id="detectedPestList" class="fw-semibold mb-3">-</div>
+
+                <div class="small text-muted mb-2">Method</div>
+                <div id="methodText" class="fw-semibold mb-3">-</div>
+
+                <div class="small text-muted mb-2">Grid</div>
+                <div id="gridText" class="fw-semibold mb-3">-</div>
+
+                <div class="small text-muted mb-2">Processing Time</div>
+                <div id="speedText" class="fw-semibold">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hasil YOLO Per Grid -->
+<div id="perGridSection" class="row g-4 mt-1 d-none">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Hasil YOLOv8 Per Grid</h5>
+
+        <p class="text-muted small">
+          Bagian ini menampilkan hasil deteksi YOLOv8 pada setiap grid setelah
+          proses Zoom-In Crop.
+        </p>
+
+        <div id="perGridContainer" class="row g-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %} {% block scripts %}
+
 <script>
   const uploadForm = document.getElementById("uploadForm");
   const fileInput = document.getElementById("fileInput");
   const fileNameEl = document.getElementById("fileName");
   const livePrev = document.getElementById("livePreview");
 
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-  const imgSrc = new Image();
-  const cropped = document.getElementById("cropped");
-
   const yoloFull = document.getElementById("yolo_full");
   const yoloCrop = document.getElementById("yolo_crop");
   const yoloLoader = document.getElementById("yoloLoader");
+
   const resetBtn = document.getElementById("resetBtn");
-
   const processBtn = document.getElementById("processBtn");
+  const blurLabel = document.getElementById("blurLabel");
 
-  let cropBlob = null; // <--- simpan blob JPEG crop di sini
-  let cropURL = ""; // preview URL untuk blob (revoke jika ada)
+  const pestStatus = document.getElementById("pestStatus");
+  const pestType = document.getElementById("pestType");
+  const accuracyText = document.getElementById("accuracyText");
+
+  const processOriginal = document.getElementById("processOriginal");
+  const processHSV = document.getElementById("processHSV");
+  const processMorphology = document.getElementById("processMorphology");
+  const processContourMasking = document.getElementById(
+    "processContourMasking",
+  );
+  const processGrid = document.getElementById("processGrid");
+  const processZoomCrop = document.getElementById("processZoomCrop");
+  const processYoloDetection = document.getElementById("processYoloDetection");
+  const processFinalResult = document.getElementById("processFinalResult");
+
+  const methodText = document.getElementById("methodText");
+  const gridText = document.getElementById("gridText");
+  const speedText = document.getElementById("speedText");
+  const totalPestText = document.getElementById("totalPestText");
+  const detectedPestList = document.getElementById("detectedPestList");
+
+  const perGridContainer = document.getElementById("perGridContainer");
+
+  const emptyImg = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
+
   let lastObjectUrl = "";
 
-  // process button
+  const processSection = document.getElementById("processSection");
+  const perGridSection = document.getElementById("perGridSection");
+  const processLoadingSection = document.getElementById(
+    "processLoadingSection",
+  );
+  const processProgressBar = document.getElementById("processProgressBar");
+
+  const processSteps = [
+    document.getElementById("step1"),
+    document.getElementById("step2"),
+    document.getElementById("step3"),
+    document.getElementById("step4"),
+    document.getElementById("step5"),
+    document.getElementById("step6"),
+    document.getElementById("step7"),
+    document.getElementById("step8"),
+  ];
+
+  let processStepTimer = null;
+
+  function showAlert(icon, title, text = "") {
+    return Swal.fire({
+      icon,
+      title,
+      text,
+      confirmButtonColor: "#0d6efd",
+    });
+  }
+
+  function resetProcessAnimation() {
+    processProgressBar.style.width = "0%";
+
+    processSteps.forEach((step) => {
+      step.classList.remove("active", "done");
+    });
+
+    if (processStepTimer) {
+      clearInterval(processStepTimer);
+      processStepTimer = null;
+    }
+  }
+
+  function startProcessAnimation() {
+    resetProcessAnimation();
+
+    processLoadingSection.classList.remove("d-none");
+    processSection.classList.add("d-none");
+    perGridSection.classList.add("d-none");
+
+    let currentStep = 0;
+
+    processStepTimer = setInterval(() => {
+      if (currentStep > 0) {
+        processSteps[currentStep - 1].classList.remove("active");
+        processSteps[currentStep - 1].classList.add("done");
+      }
+
+      if (currentStep < processSteps.length) {
+        processSteps[currentStep].classList.add("active");
+
+        const progress = Math.round(
+          ((currentStep + 1) / processSteps.length) * 95,
+        );
+        processProgressBar.style.width = progress + "%";
+
+        currentStep++;
+      } else {
+        clearInterval(processStepTimer);
+        processStepTimer = null;
+      }
+    }, 650);
+  }
+
+  function finishProcessAnimation() {
+    if (processStepTimer) {
+      clearInterval(processStepTimer);
+      processStepTimer = null;
+    }
+
+    processSteps.forEach((step) => {
+      step.classList.remove("active");
+      step.classList.add("done");
+    });
+
+    processProgressBar.style.width = "100%";
+
+    setTimeout(() => {
+      processLoadingSection.classList.add("d-none");
+      processSection.classList.remove("d-none");
+      perGridSection.classList.remove("d-none");
+    }, 400);
+  }
+
+  function scrollToProcessLoading() {
+    setTimeout(() => {
+      processLoadingSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 150);
+  }
+
+  function scrollToProcessResult() {
+    setTimeout(() => {
+      processSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 500);
+  }
+
   processBtn.addEventListener("click", () => {
-    uploadForm.requestSubmit(); // aman dipakai meski tombol di luar form
+    uploadForm.requestSubmit();
   });
 
-  // pilih file → preview & sumber canvas
   fileInput.addEventListener("change", (e) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
-    // batasi ukuran visual di client? opsional, kita biarkan apa adanya
+    if (lastObjectUrl) {
+      URL.revokeObjectURL(lastObjectUrl);
+    }
 
-    // revoke url lama
-    if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl);
     lastObjectUrl = URL.createObjectURL(file);
 
     fileNameEl.value = file.name;
     livePrev.src = lastObjectUrl;
     livePrev.style.display = "block";
-    imgSrc.src = lastObjectUrl;
 
-    // reset crop
-    if (cropURL) URL.revokeObjectURL(cropURL);
-    cropURL = "";
-    cropBlob = null;
-    cropped.src = "";
+    resetResultUI();
   });
 
-  // canvas: sizing & drawing
-  let isDown = false,
-    startX = 0,
-    startY = 0,
-    curX = 0,
-    curY = 0,
-    cw = 0,
-    ch = 0;
+  function resetResultUI() {
+    pestStatus.innerHTML = "-";
+    pestStatus.className = "";
 
-  function fitCanvasToBox() {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    cw = rect.width;
-    ch = rect.height;
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pestType.innerHTML = "-";
+    pestType.className = "";
+
+    accuracyText.innerHTML = "-";
+    accuracyText.className = "";
+
+    totalPestText.innerHTML = "-";
+    detectedPestList.innerHTML = "-";
+
+    methodText.innerHTML = "-";
+    gridText.innerHTML = "-";
+    speedText.innerHTML = "-";
+
+    blurLabel.classList.add("d-none");
+    yoloCrop.classList.remove("blur-detection");
+
+    yoloFull.src = emptyImg;
+    yoloCrop.src = emptyImg;
+
+    processOriginal.src = emptyImg;
+    processHSV.src = emptyImg;
+    processMorphology.src = emptyImg;
+    processContourMasking.src = emptyImg;
+    processGrid.src = emptyImg;
+    processZoomCrop.src = emptyImg;
+    processYoloDetection.src = emptyImg;
+    processFinalResult.src = emptyImg;
+
+    perGridContainer.innerHTML = "";
+
+    processSection.classList.add("d-none");
+    perGridSection.classList.add("d-none");
+    processLoadingSection.classList.add("d-none");
+    resetProcessAnimation();
   }
-  function redraw(showSel) {
-    ctx.clearRect(0, 0, cw, ch);
-    if (imgSrc.src) ctx.drawImage(imgSrc, 0, 0, cw, ch);
-    if (showSel && isDown) {
-      const x = Math.min(startX, curX),
-        y = Math.min(startY, curY);
-      const w = Math.abs(curX - startX),
-        h = Math.abs(curY - startY);
-      ctx.save();
-      ctx.strokeStyle = "#ff4107";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
-      ctx.strokeRect(x, y, w, h);
-      ctx.setLineDash([]);
-      ctx.restore();
-    }
-  }
-  imgSrc.onload = () => {
-    fitCanvasToBox();
-    redraw(false);
-  };
-  window.addEventListener("resize", () => {
-    fitCanvasToBox();
-    redraw(isDown);
-  });
+  function countDetectedClasses(classes) {
+    const counts = {};
 
-  canvas.addEventListener("mousedown", (e) => {
-    // reset crop setiap mulai seleksi baru
-    if (cropURL) URL.revokeObjectURL(cropURL);
-    cropURL = "";
-    cropBlob = null;
-    cropped.src = "";
-
-    const r = canvas.getBoundingClientRect();
-    startX = curX = Math.max(0, Math.min(cw, e.clientX - r.left));
-    startY = curY = Math.max(0, Math.min(ch, e.clientY - r.top));
-    isDown = true;
-    canvas.style.cursor = "nwse-resize";
-    redraw(true);
-  });
-  canvas.addEventListener("mousemove", (e) => {
-    if (!isDown) return;
-    const r = canvas.getBoundingClientRect();
-    curX = Math.max(0, Math.min(cw, e.clientX - r.left));
-    curY = Math.max(0, Math.min(ch, e.clientY - r.top));
-    redraw(true);
-  });
-  window.addEventListener("mouseup", () => {
-    if (!isDown) return;
-    isDown = false;
-    canvas.style.cursor = "crosshair";
-    const x = Math.min(startX, curX),
-      y = Math.min(startY, curY);
-    const w = Math.abs(curX - startX),
-      h = Math.abs(curY - startY);
-    if (w < 3 || h < 3) {
-      redraw(false);
-      return;
+    if (!classes || classes.length === 0) {
+      return counts;
     }
 
-    const scaleX = imgSrc.naturalWidth / cw;
-    const scaleY = imgSrc.naturalHeight / ch;
-    const sx = Math.round(x * scaleX),
-      sy = Math.round(y * scaleY);
-    const sw = Math.round(w * scaleX),
-      sh = Math.round(h * scaleY);
+    classes.forEach((className) => {
+      counts[className] = (counts[className] || 0) + 1;
+    });
 
-    const temp = document.createElement("canvas");
-    temp.width = sw;
-    temp.height = sh;
-    temp.getContext("2d").drawImage(imgSrc, sx, sy, sw, sh, 0, 0, sw, sh);
+    return counts;
+  }
 
-    const fixed = document.createElement("canvas");
-    fixed.width = 640;
-    fixed.height = 640;
-    fixed.getContext("2d").drawImage(temp, 0, 0, 640, 640);
+  function renderDetectedPestList(classes) {
+    const counts = countDetectedClasses(classes);
+    const entries = Object.entries(counts);
 
-    // >>> PENTING: kirim sebagai BLOB JPEG, bukan dataURL <<<
-    fixed.toBlob(
-      (blob) => {
-        if (!blob) return;
-        cropBlob = blob; // simpan untuk FormData
-        if (cropURL) URL.revokeObjectURL(cropURL);
-        cropURL = URL.createObjectURL(blob);
-        cropped.src = cropURL; // preview
-      },
-      "image/jpeg",
-      0.75
-    ); // kompres 75%
-    redraw(false);
-  });
+    if (entries.length === 0) {
+      return "-";
+    }
 
-  // submit: kirim FILE + (opsional) Blob crop → tampilkan barengan
+    return entries.map(([name, count]) => `${name}: ${count}`).join("<br>");
+  }
+
   uploadForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const file = fileInput.files?.[0];
+
     if (!file) {
-      alert("Pilih file dulu.");
+      showAlert("warning", "Pilih file dulu.");
       return;
     }
 
     const fd = new FormData();
     fd.append("file", file);
-    if (cropBlob) fd.append("crop", cropBlob, "crop.jpg");
 
-    // UI loading pakai processBtn
     const oldLabel = processBtn.innerHTML;
+
     processBtn.disabled = true;
     processBtn.innerHTML = "Memproses...";
+
+    startProcessAnimation();
+    scrollToProcessLoading();
+
     yoloFull.style.visibility = "hidden";
     yoloCrop.style.visibility = "hidden";
+
     yoloLoader.classList.remove("d-none");
+    blurLabel.classList.add("d-none");
 
     try {
-      const res = await fetch("/detect_both", { method: "POST", body: fd });
+      const res = await fetch("/detect_both", {
+        method: "POST",
+        body: fd,
+      });
+
       const out = await res.json();
+
       if (out.status !== "success") {
-        alert("❌ Gagal deteksi: " + (out.message || ""));
+        showAlert("error", "Gagal deteksi", out.message || "");
         return;
       }
-      const bust = (u) => u + (u.includes("?") ? "&" : "?") + "t=" + Date.now();
-      if (out.yolo_full) yoloFull.src = bust(out.yolo_full);
-      if (out.yolo_crop) yoloCrop.src = bust(out.yolo_crop);
+
+      const bust = (u) => {
+        return u + (u.includes("?") ? "&" : "?") + "t=" + Date.now();
+      };
+
+      const setImage = (el, path) => {
+        if (!path) return;
+
+        if (path.startsWith("/")) {
+          el.src = bust(path);
+        } else {
+          el.src = bust("/" + path);
+        }
+      };
+
+      setImage(yoloFull, out.yolo_full);
+      setImage(yoloCrop, out.yolo_crop);
+
+      if (out.process_images) {
+        setImage(processOriginal, out.process_images.original);
+        setImage(processHSV, out.process_images.hsv_mask);
+        setImage(processMorphology, out.process_images.morphology);
+        setImage(processContourMasking, out.process_images.contour_masking);
+        setImage(processGrid, out.process_images.grid);
+        setImage(processZoomCrop, out.process_images.zoom_crop);
+        setImage(processYoloDetection, out.process_images.yolo_detection);
+        setImage(processFinalResult, out.process_images.final_result);
+      }
+
+      perGridContainer.innerHTML = "";
+
+      if (out.per_grid_results && out.per_grid_results.length > 0) {
+        out.per_grid_results.forEach((item) => {
+          const imgPath = item.image
+            ? item.image.startsWith("/")
+              ? bust(item.image)
+              : bust("/" + item.image)
+            : emptyImg;
+
+          const accPercent = Math.round((item.avg_conf || 0) * 100);
+
+          const classText =
+            item.classes && item.classes.length > 0
+              ? item.classes.join(", ")
+              : "-";
+
+          const card = `
+            <div class="col-md-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">Grid ${item.grid}</h6>
+
+                  <div class="ratio ratio-1x1 bg-light border rounded overflow-hidden mb-2">
+                    <img
+                      src="${imgPath}"
+                      class="w-100 h-100"
+                      style="object-fit: contain"
+                      alt="Grid ${item.grid}"
+                    />
+                  </div>
+
+                  <div class="small">
+                    <div><strong>Boxes:</strong> ${item.num_boxes || 0}</div>
+                    <div><strong>Class:</strong> ${classText}</div>
+                    <div><strong>Confidence:</strong> ${accPercent}%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          perGridContainer.insertAdjacentHTML("beforeend", card);
+        });
+      } else {
+        perGridContainer.innerHTML = `
+          <div class="col-12">
+            <div class="alert alert-warning mb-0">
+              Tidak ada hasil deteksi per grid.
+            </div>
+          </div>
+        `;
+      }
+
+      let acc = 0;
+      let pest = "Unknown";
+      let boxCount = 0;
+
+      if (out.crop_summary) {
+        acc = out.crop_summary.avg_conf || 0;
+        boxCount = out.crop_summary.num_boxes || 0;
+
+        const detectedClasses = out.crop_summary.classes || [];
+
+        if (detectedClasses.length > 0) {
+          pest = detectedClasses[0];
+        }
+
+        totalPestText.innerHTML = boxCount + " hama";
+
+        detectedPestList.innerHTML = renderDetectedPestList(detectedClasses);
+
+        methodText.innerHTML = out.crop_summary.method || "-";
+        gridText.innerHTML = out.crop_summary.grid || "-";
+        speedText.innerHTML = (out.crop_summary.duration_ms || 0) + " ms";
+      }
+
+      const accPercent = Math.round(acc * 100);
+
+      if (boxCount > 0 && acc >= 0.5) {
+        pestStatus.innerHTML = 'Pest : "Detected"';
+        pestStatus.className = "detected";
+
+        pestType.innerHTML =
+          "Pest Type : " +
+          renderDetectedPestList(out.crop_summary.classes || []);
+        pestType.className = "info-text";
+
+        accuracyText.innerHTML = "Accuracy : " + accPercent + "%";
+        accuracyText.className = "info-text";
+
+        blurLabel.classList.add("d-none");
+      } else {
+        pestStatus.innerHTML = 'Pest : "Not Detected"';
+        pestStatus.className = "not-detected";
+
+        pestType.innerHTML = "-";
+        pestType.className = "info-text";
+
+        accuracyText.innerHTML = "Accuracy : " + accPercent + "%";
+        accuracyText.className = "info-text";
+
+        blurLabel.classList.remove("d-none");
+      }
+
+      finishProcessAnimation();
+      scrollToProcessResult();
+
       yoloFull.style.visibility = "visible";
       yoloCrop.style.visibility = "visible";
     } catch (err) {
-      alert("Terjadi error saat proses deteksi.");
+      processLoadingSection.classList.add("d-none");
+      resetProcessAnimation();
+
+      showAlert("error", "Terjadi error saat proses deteksi.");
       console.error(err);
     } finally {
       yoloLoader.classList.add("d-none");
+
       processBtn.disabled = false;
       processBtn.innerHTML = oldLabel;
     }
   });
 
-  document.getElementById("resetBtn").addEventListener("click", () => {
+  resetBtn.addEventListener("click", () => {
     location.href = "/";
   });
 </script>
+
 {% endblock %}
